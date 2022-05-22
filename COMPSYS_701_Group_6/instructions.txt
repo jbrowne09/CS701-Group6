@@ -1,0 +1,111 @@
+IOREAD R1 A10	//read switch value into R1
+IOREAD R2 A11	//read button value into R2
+NOOP
+
+ANDop R3 R1 896	//extract bits 9..7 target address
+ANDop R4 R1 112	//extract bits 6..4 forward address
+ANDop R5 R1 14	//extract bits 3..1 mode value
+ANDop R6 R1 1	//extract bit 0 enable bit
+
+LSL R7 R3 1		//shift target address to 10..8 of top 16 bit 26..24 of 32-bit
+RSL R8 R3 7		//shift target address to bits 2..0 for display
+RSL R9 R4 4		//shift forward address to bits 2..0 for display
+RSL R10 R5 1	//shift mode to bits 2..0 for display
+IOWRITE A9 R8	//disp target address on hex4
+IOWRITE A8 R9	//disp forward address on hex2
+IOWRITE A7 R10	//disp mode on hex0
+
+SUB R2 7		//check for KEY3 press ASP active low = 0111
+SZ 21
+SUB R2 11		//check for KEY2 press ADC active low = 1011
+SZ 35
+SUB R2 13		//check for KEY1 press DAC active low = 1101
+SZ 46
+JMPop 0
+
+LDRop R11 0		//clear reg 11
+NOOP			//delay to wait for R11 result
+NOOP
+OR R11 R11 R4	//initial lower 16-bits missing mode and en
+ORop R7 R7 36864//upper 16-bits of full ASP packet first four 1001 = 36864
+NOOP			//delay to wait for R11 result
+OR R11 R11 R5	//lower 16-bits of full ASP packet adding mode
+NOOP			//delay to wait for R11 result
+NOOP
+OR R11 R11 R6	//lower 16-bits of full ASP packet adding en
+IOWRITE A3 R8	//write target address to addr(3)
+IOWRITE A1 R7 	//write upper 16-bits to addr(1)
+IOWRITE A2 R11	//write lower 16-bits to addr(2)
+JMPop 0
+
+LDRop R11 0 	//clear reg 11
+NOOP			//delay to wait for R11 result
+NOOP
+OR R11 R11 R4	//initial lower 16-bits missing en
+ORop R7 R7 40960	//upper 16-bits of full ADC packet first four 1010 = 40960
+NOOP			//wait for R11 result
+OR R11 R11 R6	//lower 16-bits of full ADC packet adding en
+IOWRITE A3 R8	//write target address to addr(3)
+IOWRITE A1 R7 	//write upper 16-bits to addr(1)
+IOWRITE A2 R11	//write lower 16-bits to addr(2)
+JMPop 0
+
+ORop R7 R7 45056//upper 16-bits of full DAC packet first four 1011 = 45056
+NOOP			//delay to wait for R7 result
+NOOP
+IOWRITE A3 R8	//write target address to addr(3)
+IOWRITE A1 R7 	//write upper 16-bits to addr(1)
+IOWRITE A2 R6	//write lower 16-bits to addr(2) only include en for DAC
+JMPop 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
